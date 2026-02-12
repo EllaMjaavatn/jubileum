@@ -1,123 +1,178 @@
-import { useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import confetti from "canvas-confetti";
 
 const images = [
   {
-    src: "/images/EllaogJørgen-13.jpg",
-    text: "Første minner sammen ❤️",
+    src: "/images/ForsteTreff18.png",
+    text: "Vår første treff, 2018 🍔",
     width: "250px",
     height: "350px",
   },
   {
-    src: "/images/IMG_3476.JPG",
-    text: "En av mine favoritter 💘",
-    width: "250px",
-    height: "350px",
+    src: "/images/Oslo2019.jpg",
+    text: "Vår første tur til Oslo sammen, tror jeg, 2019 ❤️",
+  },
+  {
+    src: "/images/jul20.jpg",
+    text: "Vår andre jul sammen, tror jeg, 2020 🎄",
+  },
+  {
+    src: "/images/Nyttaar21.JPG",
+    text: "Vårt nyttårsbilde sammen på Facetim, 2021 🎉",
+  },
+  {
+    src: "/images/Kypros.png",
+    text: "Vår tur til Kypros, 2022 🕶",
+  },
+  {
+    src: "/images/ForsteThailandtur23.JPG",
+    text: "Vår første ferie i Thailand sammen, 2023 🌴",
+  },
+  {
+    src: "/images/mannogKone24.jpg",
+    text: "Vårt første år som mann og kone, 2024 💍",
+  },
+  {
+    src: "/images/thailandtur25.JPG",
+    text: "Bryllupsreise og andre tur til Thailand sammen, 2025 🌴",
+  },
+  {
+    src: "/images/Rocky26.JPG",
+    text: "Og selvfølgelig vårt 2026 .....🐺",
   },
 ];
 
-function fireConfetti() {
-  confetti({
-    particleCount: 100,
-    spread: 70,
-    origin: { y: 0.6 },
-  });
-}
+const loveLetterText = `Hurra for vårt 8-årsjubileet og Happy Valentine på forkudd, kjære.
+Tenk at vi nå har vært sammen i 8 år. Tiden flyr når jeg er sammen med deg.
+
+På disse årene har vi delt så mange minner, opplevelser både oppturer og nedturer og vi har alltid stått sammen.
+
+Jeg er så takknemlig for at jeg har deg i livet mitt.
+Du er ikke bare min mann, men også min beste venn, min trygghet og mitt hjem.
+
+Jeg er så utrolig glad i deg ❤️
+
+Elsker deg alltid, jub jub 😘`;
 
 export default function App() {
-  const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [pickedDate, setPickedDate] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const [showAfterCloseText, setShowAfterCloseText] = useState(false);
+
+  const intervalRef = useRef<number | null>(null);
   const [error, setError] = useState("");
 
-  const CORRECT_DATE = "2018-02-13"; //input type="date" bruker dette formatet
-  const todayText = useMemo(() => new Date().toLocaleDateString("no-NO"), []);
+  const CORRECT_DATE = "2018-02-13";
+  const [typewriterText, setTypewriterText] = useState("");
 
-  //const dateText = useMemo(() => {
-  //return new Date().toLocaleDateString("no-NO");
-  //}, []);
+  function startLoveTyping() {
+    setTypewriterText("");
+    let index = 0;
+
+    intervalRef.current = window.setInterval(() => {
+      index++;
+      setTypewriterText(loveLetterText.slice(0, index));
+
+      if (index >= loveLetterText.length && intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }, 50);
+  }
+
+  function fireConfetti() {
+    confetti({
+      particleCount: 150,
+      spread: 90,
+      origin: { y: 0.6 },
+    });
+  }
 
   function checkDate() {
-    if (!pickedDate) {
-      setError("Vennligst velg en dato.");
-      setUnlocked(false);
-      return;
-    }
-
     if (pickedDate === CORRECT_DATE) {
       setUnlocked(true);
-      setOpen(true);
-      setError("");
+      setShowAfterCloseText(false); //skjul tekst når åpner igjen
       fireConfetti();
+
+      setTimeout(() => {
+        dialogRef.current?.showModal();
+        startLoveTyping();
+      }, 1500);
     } else {
-      setError("Det var ikke riktig dato 😢 Prøv igjen.");
-      setUnlocked(false);
+      setError("Feil dato 😢 Du har en sjanse til 😡");
     }
   }
 
   return (
-    <main className="page">
-      <h1 className="title">Lås opp brevet</h1>
-
-      {/* Viser Åpne/Lukk bare hvis datoen er riktig */}
-      {!unlocked && (
-        <>
-          <label className="label">
-            Velg datoen for jubileet vårt:
-            <input
-              type="date"
-              value={pickedDate}
-              onChange={(e) => setPickedDate(e.target.value)}
-            />
-          </label>
-          <button className="btn" type="button" onClick={checkDate}>
-            Sjekk dato
-          </button>
-
-          {error && <p className="error">{error}</p>}
-
-          {/*  <button
-            className="openBtn"
-            type="button"
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? "Lukk brevet" : "Åpne brevet"}
-          </button> */}
-        </>
+    <main>
+      {unlocked ? (
+        <h1>💌 Kjærlighetsbrevet</h1>
+      ) : (
+        <h1>💌 Lås opp kjærlighetsbrevet</h1>
       )}
 
-      {/* Viser brevet bare hvis det er låst opp og Åpent */}
-      {unlocked && open && (
-        <div className="popupOverlay">
-          <div className="popupLetter">
-            <button className="closeBtn" onClick={() => setOpen(false)}>
-              ×
-            </button>
+      {!unlocked && (
+        <div className="card">
+          <input
+            type="date"
+            value={pickedDate}
+            onChange={(e) => setPickedDate(e.target.value)}
+          />
 
-            <p className="date">Dato: {todayText}</p>
-            <h2 className="sender">Til deg 💘</h2>
-
-            <p className="text">
-              Gratulerer med 8 år sammen!
-              <br />
-              Jeg er så glad i deg.
-              <br />
-              Takk for alle minnene vi har sammen ❤️
-            </p>
-
-            <p className="signature">— Fra meg</p>
-
-            <div className="cardGallery">
-              {images.map((img, i) => (
-                <div key={i} className="card">
-                  <img className="cardImg" src={img.src} alt={img.text} />
-                  <p className="cardText">{img.text}</p>
-                </div>
-              ))}
-            </div>
+          <button className="btn" onClick={checkDate}>
+            Sjekk dato ❤️
+          </button>
+          <div className="errorText">
+            {error && <p className="error">{error}</p>}
           </div>
+        </div>
+      )}
+
+      {/* Dialog brev */}
+      <dialog
+        ref={dialogRef}
+        className="dialog"
+        onClose={() => setShowAfterCloseText(true)}
+      >
+        <h2>Kjære Jørgen ❤️</h2>
+        <p className="loveMessage">{typewriterText}</p>
+
+        <div className="gallery">
+          {images.map((img, i) => (
+            <figure key={i} className="photoCard">
+              <img className="photoImg" src={img.src} alt={img.text} />
+              <figcaption className="imgTexts">{img.text}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <button
+          className="closeBtn"
+          onClick={() => {
+            dialogRef.current?.close();
+          }}
+        >
+          ✕ Lukk brevet
+        </button>
+      </dialog>
+      {showAfterCloseText && (
+        <div className="summaryCloseText">
+          <p>
+            Jeg elsker deg så mye og jeg gleder meg til alle årene vi har foran
+            oss 💖
+          </p>
+
+          <button
+            className="reopenBtn"
+            onClick={() => {
+              setShowAfterCloseText(false);
+              dialogRef.current?.showModal();
+              startLoveTyping();
+            }}
+          >
+            💌 Åpne brevet igjen
+          </button>
         </div>
       )}
     </main>
